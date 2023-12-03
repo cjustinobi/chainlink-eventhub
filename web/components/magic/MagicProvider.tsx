@@ -8,7 +8,7 @@ import { ethers } from 'ethers'
 
 export type MagicContextType = {
   magic: Magic | null;
-  provider: null;
+  provider: ethers.providers.Web3Provider;
 };
 
 const MagicContext = createContext<MagicContextType>({
@@ -20,7 +20,7 @@ export const useMagicContext = () => useContext(MagicContext)
 
 const MagicProvider = ({ children }: { children: React.ReactNode }) => {
   const [magicInstance, setMagicInstance] = useState<Magic | null>(null);
-  const [web3Instance, setWeb3Instance] = useState<null>(null);
+  const [web3Instance, setWeb3Instance] = useState<ethers.providers.Web3Provider | null>(null);
 
   useEffect(() => {
 
@@ -33,6 +33,7 @@ const MagicProvider = ({ children }: { children: React.ReactNode }) => {
       })
 
       setMagicInstance(magic)
+      // setWeb3Instance(new Web3((magic as any).rpcProvider));
       setWeb3Instance(new ethers.providers.Web3Provider((magic as any).rpcProvider))
     }
   }, [])
