@@ -5,7 +5,7 @@ import EventHub from '../artifacts/contracts/EventHub.sol/EventHub.json'
 
 const contractABI = EventHub.abi
 
-const contractAddress = '0xa49B31f87d73d47cB0BC098293C14956a5571fCF'
+const contractAddress = '0xb6C18b77D44E00EDa15d0a507080419dd15a0dC7'
 
 export const contractInstance = (provider: ethers.Signer | ethers.providers.Provider | undefined) => {
   return new ethers.Contract(contractAddress, contractABI, provider)
@@ -33,6 +33,39 @@ export const getEvents = async (provider: ethers.Signer | ethers.providers.Provi
         confirmedRSVPs: eventData[6],
       }
       events.push(event)
+    }
+
+    return events
+
+  } catch (e) {
+    console.log(e)
+  }
+}
+
+export const getMyEvents = async (provider: ethers.Signer | ethers.providers.Provider | undefined, addr: string) => {
+  try {
+    const contract = await contractInstance(provider)
+
+    const eventIndexes = await contract.getCreatorEvents(addr)
+
+    let events = []
+
+    if (eventIndexes.length) {
+      for (let i = 0; i < eventIndexes.length; i++) {
+        const eventData = await contract.getEvent(eventIndexes[i])
+      
+        const event = {
+          id: i,
+          title: eventData[0],
+          imagePath: eventData[1],
+          owner: eventData[2],
+          eventTimestamp: eventData[3],
+          maxCapacity: eventData[4],
+          deposit: eventData[5],
+          confirmedRSVPs: eventData[6],
+        }
+        events.push(event)
+      }
     }
 
     return events

@@ -3,6 +3,14 @@ pragma solidity ^0.8.9;
 
 
 contract EventHub {
+
+     enum Category {
+        REFI,
+        RENEWABLE_ENERGY,
+        AGRICULTURE,
+        TECH
+    }
+
     uint256 public totalEvents;
     uint256[] eventIds;
 

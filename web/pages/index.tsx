@@ -10,10 +10,10 @@ const Home = () => {
 
   const [events, setEvents] = useState([])
   const { eventCreated } = useContext(ModalContext)
-  // const { provider } = useMagicContext()
+  const { provider } = useMagicContext()
 
 const getEventHandler = async () => {
-  const provider = new ethers.providers.Web3Provider(window.ethereum)
+  // const provider = new ethers.providers.Web3Provider(window.ethereum)
   const eventList = await getEvents(provider)
   setEvents(eventList);
 }
