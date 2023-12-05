@@ -23,7 +23,6 @@ const MagicProvider = ({ children }: { children: React.ReactNode }) => {
   const [web3Instance, setWeb3Instance] = useState<ethers.providers.Web3Provider | null >(null);
 
   useEffect(() => {
-
     if (process.env.NEXT_PUBLIC_MAGIC_API_KEY) {
       const magic = new Magic(process.env.NEXT_PUBLIC_MAGIC_API_KEY as string, {
         network: {
@@ -35,6 +34,7 @@ const MagicProvider = ({ children }: { children: React.ReactNode }) => {
       setMagicInstance(magic)
       // setWeb3Instance(new Web3((magic as any).rpcProvider));
       setWeb3Instance(new ethers.providers.Web3Provider((magic as any).rpcProvider))
+
     }
   }, [])
 

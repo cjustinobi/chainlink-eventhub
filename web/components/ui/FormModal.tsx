@@ -4,11 +4,13 @@ import { ModalContext } from "@/contexts/ModalContext"
 import { createEvent, toTimestamp } from "@/utils"
 import { useMagicContext } from "@/components/magic/MagicProvider"
 import CloseIcon from '@/public/close.svg'
+import LoadingIcon from '@/public/loading.svg'
 
 const FormModal = () => {
 const { showModal, toggleModal, setEventCreated } = useContext(ModalContext)
 const { provider } = useMagicContext()
 
+const [loading, setLoading] = useState<boolean>(false)
 const [account, setAccount] = useState<string | null>(null)
 const [title, setTitle] = useState<string>('SWeet title')
 // const [description, setDescription] = useState<string>('Desc')
@@ -25,7 +27,7 @@ const saveHandler = async () => {
       try {
     
         const tx = await createEvent(
-          provider.getSigner(), 
+          provider?.getSigner(), 
           title, 
           startTime, 
           deposit, 
@@ -175,7 +177,7 @@ const saveHandler = async () => {
           onClick={saveHandler}
           className="px-4 py-2 bg-green-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300"
         >
-          Save
+          {!loading ? <div className="loading-container"><Image className="loading" src={LoadingIcon} alt="magic-logo" /></div> : 'Save'}
         </button>
       
       </div>

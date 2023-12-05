@@ -12,67 +12,14 @@ const Home = () => {
   const { eventCreated } = useContext(ModalContext)
   const { provider } = useMagicContext()
 
-const getEventHandler = async () => {
-  // const provider = new ethers.providers.Web3Provider(window.ethereum)
-  const eventList = await getEvents(provider)
-  setEvents(eventList);
-}
+  useEffect(() => {
+    const getEventHandler = async () => {
+      const eventList = await getEvents(provider);
+      setEvents(eventList);
+    };
 
-useEffect(() => {
-    getEventHandler()
-  }, [eventCreated])
-
-//   useEffect(() => {
-//     interface ItemType {
-//       title: string
-//       phone: string
-//       attendance: string
-//       capacity: string
-// }
-//   // const provider = new ethers.providers.Web3Provider(window.ethereum)
-//   const contract =  contractInstance(provider)
-
-//   const sendSMS = async (data: any) => {
-
-//     await Promise.all(data.map(async (item: string) => {
-//       const str: string[] = item.split('-')
-
-//       const itemStr: ItemType = {
-//         title: str[0],
-//         phone: str[1],
-//         attendance: str[2],
-//         capacity: str[3]
-//       }
-
-//       const body = `Your event ${itemStr.title} just ended. You had ${itemStr.attendance}/${itemStr.capacity} in attendance`
-
-//       try {
-//         const response = await fetch('/api/twilio', {
-//           method: 'POST',
-//           headers: {
-//             'Content-Type': 'application/json',
-//           },
-//           body: JSON.stringify({
-//             body,
-//             to: itemStr.phone
-//           })
-//         })
-
-//         const res = await response.json()
-
-//       } catch (error) {
-//         console.error('Error sending SMS:', error)
-//       }
-//     })
-//   )}
-
-//     contract.on('Phones', sendSMS)
-
-//     // Remove the listener when the component is unmounted
-//     return () => {
-//       contract.off('Phones', sendSMS)
-//     }
-//   }, [])
+    getEventHandler();
+  }, [eventCreated, provider]);
 
   return (
   <div className="px-4 py-12 md:py-20 md:px-10 lg:px-16 xl:px-24">

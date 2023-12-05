@@ -42,11 +42,14 @@ export const getEvents = async (provider: ethers.Signer | ethers.providers.Provi
   }
 }
 
-export const getMyEvents = async (provider: ethers.Signer | ethers.providers.Provider | undefined, addr: string) => {
+export const getMyEvents = async (provider: ethers.Signer | ethers.providers.Provider | undefined, addr: string | null) => {
   try {
     const contract = await contractInstance(provider)
+    // if (!addr) return console.log('Not connected')
+    let eventIndexes = await contract.getCreatorEvents(addr)
+    if (!(eventIndexes)) return []
 
-    const eventIndexes = await contract.getCreatorEvents(addr)
+    eventIndexes = eventIndexes.map((item: number) => Number(item));
 
     let events = []
 

@@ -30,20 +30,15 @@ const EventCard: React.FC<EventCardProps> = ({
     const { provider } = useMagicContext()
 
     const rsvp = async (eventId: number, deposit: number) => {
-      // if (window.ethereum) {
-        try {
-          // const provider = new ethers.providers.Web3Provider(window.ethereum);
-          // const provider = new ethers.providers.Web3Provider(magic.rpcProvider);
-          const res = await createNewRSVP(provider.getSigner(), eventId, deposit)
-          if (res) {
-            setEventCreated(true)
-          }
-        } catch (error) {
-          console.log(error)
+    
+      try {
+        const res = await createNewRSVP(provider?.getSigner(), eventId, deposit)
+        if (res) {
+          setEventCreated(true)
         }
-      // } else {
-      //   console.log('Install Metamask to continue')
-      // }
+      } catch (error) {
+        console.log(error)
+      }
     }
 
   return (

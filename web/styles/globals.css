@@ -25,3 +25,21 @@ body {
     )
     rgb(var(--background-start-rgb));
 }
+
+.loading-container {
+  @apply w-[50px] text-center flex items-center justify-center cursor-default;
+}
+
+.loading {
+  @apply cursor-default animate-spin;
+}
+
+@keyframes rotation {
+  0% {
+    transform: rotate(0);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
