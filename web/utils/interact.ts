@@ -1,11 +1,12 @@
 
 import { ethers } from 'ethers'
-import EventHub from '../artifacts/contracts/EventHub.sol/EventHub.json'
+import EventHub from '../artifacts/contracts/EventHubV1.sol/EventHubV1.json'
 
 
 const contractABI = EventHub.abi
 
-const contractAddress = '0xb6C18b77D44E00EDa15d0a507080419dd15a0dC7'
+// const contractAddress = '0xb6C18b77D44E00EDa15d0a507080419dd15a0dC7'
+const contractAddress = '0xbA8c0CaBbEb7dB723Bb9788D84B260D5E3717305'
 
 export const contractInstance = (provider: ethers.Signer | ethers.providers.Provider | undefined) => {
   return new ethers.Contract(contractAddress, contractABI, provider)

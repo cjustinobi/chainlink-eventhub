@@ -1,8 +1,12 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
+import "@chainlink/contracts/src/v0.8/automation/AutomationCompatible.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
+import "@chainlink/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol";
+import "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
 
-contract EventHub {
+contract EventHubV1 is AutomationCompatibleInterface, VRFConsumerBaseV2, ConfirmedOwner {
 
      enum Category {
         REFI,
@@ -51,6 +55,75 @@ contract EventHub {
 
     // Stores indexes of RSVPs done by an address.
     mapping(address => uint256[]) addressRSVPsList;
+
+      /**
+     * Use an interval in seconds and a timestamp to slow execution of Upkeep
+     */
+    // uint256 public immutable interval;
+    // uint256 public lastTimeStamp;
+
+    // constructor(uint256 updateInterval) {
+    //     interval = updateInterval;
+    //     lastTimeStamp = block.timestamp;
+    // }
+
+    event RequestSent(uint256 requestId, uint32 numWords);
+    event RequestFulfilled(uint256 requestId, uint256[] randomWords);
+
+    struct RequestStatus {
+        bool fulfilled; // whether the request has been successfully fulfilled
+        bool exists; // whether a requestId exists
+        uint256[] randomWords;
+    }
+    mapping(uint256 => RequestStatus)
+        public s_requests; /* requestId --> requestStatus */
+    VRFCoordinatorV2Interface COORDINATOR;
+
+    // Your subscription ID.
+    uint64 s_subscriptionId;
+
+    // past requests Id.
+    uint256[] public requestIds;
+    uint256 public lastRequestId;
+
+    // The gas lane to use, which specifies the maximum gas price to bump to.
+    // For a list of available gas lanes on each network,
+    // see https://docs.chain.link/docs/vrf/v2/subscription/supported-networks/#configurations
+    bytes32 keyHash =
+        0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c;
+
+    // Depends on the number of requested values that you want sent to the
+    // fulfillRandomWords() function. Storing each word costs about 20,000 gas,
+    // so 100,000 is a safe default for this example contract. Test and adjust
+    // this limit based on the network that you select, the size of the request,
+    // and the processing of the callback request in the fulfillRandomWords()
+    // function.
+    uint32 callbackGasLimit = 100000;
+
+    // The default is 3, but you can set this higher.
+    uint16 requestConfirmations = 3;
+
+    // For this example, retrieve 2 random values in one request.
+    // Cannot exceed VRFCoordinatorV2.MAX_NUM_WORDS.
+    uint32 numWords = 1;
+    uint256 public randomWordsNum;
+    address public recentWinner;
+
+    /**
+     * HARDCODED FOR Mumbai
+     * COORDINATOR: 0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625
+     */
+    constructor(
+        uint64 subscriptionId
+    )
+        VRFConsumerBaseV2(0x7a1BaC17Ccc5b313516C5E16fb24f7659aA5ebed)
+        ConfirmedOwner(msg.sender)
+    {
+        COORDINATOR = VRFCoordinatorV2Interface(
+            0x7a1BaC17Ccc5b313516C5E16fb24f7659aA5ebed
+        );
+        s_subscriptionId = subscriptionId;
+    }
 
     function createNewEvent(
         string calldata title,
@@ -124,7 +197,7 @@ contract EventHub {
     }
 
 
-    function confirmAllAttendees() external {
+    function confirmAllAttendees() public  {
         string[] memory data;
         // Iterate over all event IDs
         for (uint256 i = 0; i < totalEvents; i++) {
@@ -313,5 +386,135 @@ contract EventHub {
         return string(s);
     }
 
+     function checkUpkeep(
+        bytes calldata /* checkData */
+    )
+        external
+        view
+        override
+        returns (bool upkeepNeeded, bytes memory  /* performData */)
+    {
+        for(uint256 i = 0; i < eventIds.length; i++){
+            upkeepNeeded = idToEvent[i].paidOut == false;
+        }
+        // upkeepNeeded = (block.timestamp - lastTimeStamp) > interval;
+        // We don't use the checkData in this example. The checkData is defined when the Upkeep was registered.
+    }
+
+    function performUpkeep(bytes calldata /* performData */) external override {
+        // if ((block.timestamp - lastTimeStamp) > interval) {
+        //     lastTimeStamp = block.timestamp;
+        //     confirmAllAttendees()
+        // }
+       for(uint256 i = 0; i < eventIds.length; i++){
+            if(block.timestamp <= idToEvent[i].eventTimestamp + 2 minutes
+             && idToEvent[i].paidOut == false  && idToEvent[i].confirmedRSVPs.length != 0
+               ){
+                confirmAllAttendees();
+            }
+
+            if(block.timestamp <= idToEvent[i].eventTimestamp + 2 minutes 
+            && idToEvent[i].paidOut == true  && idToEvent[i].confirmedRSVPs.length != 0){
+                sendUnclaimedFeeToRandomConfirmedAttendee();
+            }
+        }
+
+       
+        // We don't use the performData in this example. The performData is generated by the Automation Node's call to your checkUpkeep function
+    }
+
+
+    function sendUnclaimedFeeToRandomConfirmedAttendee() public  returns (address){        
+        CreateEvent memory myEvent;
+         for(uint256 i = 0; i < eventIds.length; i++){
+             // look up event
+         myEvent = idToEvent[i];
+
+        }
+    // check that the paidOut boolean still equals false AKA the money hasn't already been paid out
+        require(!myEvent.paidOut, "ALREADY PAID");
+            // check if it's been 2 minutes past myEvent.eventTimestamp
+        require(
+            block.timestamp >= (myEvent.eventTimestamp + 2 minutes),
+            "TOO EARLY"
+        );
+
+        // calculate how many people didn't claim by comparing
+        uint256 unclaimed = myEvent.confirmedRSVPs.length -
+            myEvent.claimedRSVPs.length;
+
+        uint256 payout = unclaimed * myEvent.deposit;
+
+        // mark as paid before sending to avoid reentrancy attack
+        myEvent.paidOut = true;
+
+        // implement the random person and send to the random person
+        // send the payout to the owner
+        uint256 eventId;
+        requestRandomWords();
+
+        for(uint256 i = 0; i < eventIds.length; i++){
+             // look up event
+             eventId = i;
+         address [] memory confirmedList = idToEvent[i].confirmedRSVPs;
+         uint256 winnerIndex = randomWordsNum % confirmedList.length;
+          recentWinner = confirmedList[winnerIndex];
+
+        }
+        (bool sent, ) = recentWinner.call{value: payout}("");
+
+        if (!sent) {
+            myEvent.paidOut = false;
+        }
+
+        require(sent, "Failed to send Ether");
+        emit DepositsPaidOut(eventId);
+        return recentWinner;
+    }
+
+    // Assumes the subscription is funded sufficiently.
+    function requestRandomWords()
+        public 
+        onlyOwner
+        returns (uint256 requestId)
+    {
+        // Will revert if subscription is not set and funded.
+        requestId = COORDINATOR.requestRandomWords(
+            keyHash,
+            s_subscriptionId,
+            requestConfirmations,
+            callbackGasLimit,
+            numWords
+        );
+        s_requests[requestId] = RequestStatus({
+            randomWords: new uint256[](0),
+            exists: true,
+            fulfilled: false
+        });
+        requestIds.push(requestId);
+        lastRequestId = requestId;
+        emit RequestSent(requestId, numWords);
+        return requestId;
+    }
+
+    function fulfillRandomWords(
+        uint256 _requestId,
+        uint256[] memory _randomWords
+    ) internal override {
+        require(s_requests[_requestId].exists, "request not found");
+        s_requests[_requestId].fulfilled = true;
+        s_requests[_requestId].randomWords = _randomWords;
+        randomWordsNum = _randomWords[0]; // Set array-index to variable, easier to play with
+
+        emit RequestFulfilled(_requestId, _randomWords);
+    }
+
+    function getRequestStatus(
+        uint256 _requestId
+    ) external view returns (bool fulfilled, uint256[] memory randomWords) {
+        require(s_requests[_requestId].exists, "request not found");
+        RequestStatus memory request = s_requests[_requestId];
+        return (request.fulfilled, request.randomWords);
+    }
 }
 
