@@ -78,6 +78,43 @@ export const getMyEvents = async (provider: ethers.Signer | ethers.providers.Pro
   }
 }
 
+export const getMyRSVPs = async (provider: ethers.Signer | ethers.providers.Provider | undefined, addr: string | null) => {
+  try {
+    const contract = await contractInstance(provider)
+    // if (!addr) return console.log('Not connected')
+    let eventIndexes = await contract.getUserRSVPs(addr)
+    if (!(eventIndexes)) return []
+
+    eventIndexes = eventIndexes.map((item: number) => Number(item));
+
+    let RSVPs = []
+
+    if (eventIndexes.length) {
+      for (let i = 0; i < eventIndexes.length; i++) {
+        const eventData = await contract.getEvent(eventIndexes[i])
+      
+        const event = {
+          id: i,
+          title: eventData[0],
+          imagePath: eventData[1],
+          owner: eventData[2],
+          eventTimestamp: eventData[3],
+          maxCapacity: eventData[4],
+          deposit: eventData[5],
+          confirmedRSVPs: eventData[6],
+        }
+        RSVPs.push(event)
+      }
+    }
+
+    return RSVPs
+
+  } catch (e) {
+    console.log(e)
+  }
+}
+
+
 export const createEvent = async (
   provider: ethers.Signer | ethers.providers.Provider | undefined,
   title: string,

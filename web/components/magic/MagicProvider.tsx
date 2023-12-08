@@ -2,9 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { Magic } from 'magic-sdk'
 import { getChainId, getNetworkUrl } from '@/utils'
 import { ethers } from 'ethers'
-// import Web3 from 'web3';
 
-// const { Web3 } = require('web3')
 
 export type MagicContextType = {
   magic: Magic | null;
@@ -32,7 +30,6 @@ const MagicProvider = ({ children }: { children: React.ReactNode }) => {
       })
 
       setMagicInstance(magic)
-      // setWeb3Instance(new Web3((magic as any).rpcProvider));
       setWeb3Instance(new ethers.providers.Web3Provider((magic as any).rpcProvider))
 
     }

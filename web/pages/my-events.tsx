@@ -1,18 +1,26 @@
 import EventCard from "@/components/EventCard";
 import { useMagicContext } from "@/components/magic/MagicProvider";
-import { getMyEvents } from "@/utils";
-import { ethers } from "ethers";
+import { getMyEvents, getMyRSVPs } from "@/utils";
 import { useEffect, useState } from "react";
+
+interface Event {
+  id: number
+  title: string
+  confirmedRSVPs: boolean
+  deposit: number
+  owner: string
+  imagePath: string
+  maxCapacity: number
+  startTime: string
+}
 
 const MyEvents = () => {
 
 
   const { provider } = useMagicContext()
-  const [events, setEvents] = useState([])
+  const [events, setEvents] = useState<Event[]>([])
+  const [RSVPS, setRSVPs] = useState([])
   const [account, setAccount] = useState<string | null>(null)
-
-
-
 
   useEffect(() => {
     const user = localStorage.getItem('user');
@@ -21,11 +29,10 @@ const MyEvents = () => {
 
   useEffect(() => {
     const getMyEventHandler = async () => {
-  // const provider = new ethers.providers.Web3Provider(window.ethereum)
 
-  if (provider) {
+  if (account) {
     const eventList = await getMyEvents(provider, account)
-    
+
     setEvents(eventList)
     console.log(eventList);
   }
@@ -33,24 +40,59 @@ const MyEvents = () => {
     getMyEventHandler()
   }, [provider])
 
+  useEffect(() => {
+    const getMyRSVPHandler = async () => {
+
+  if (account) {
+    const eventList = await getMyRSVPs(provider, account)
+
+    setRSVPs(eventList)
+    console.log(eventList);
+  }
+}
+    getMyRSVPHandler()
+  }, [provider])
+
 	return (
 		<>
-			<span>MyEvents</span>
+			<div>
+          <span>MyEvents</span>
+          <div className="flex flex-wrap">
+          {events && events.map(event => (
+            <EventCard
+              key={event.id}
+              id={event.id}
+              title={event.title}
+              confirmedRSVPs={event.confirmedRSVPs}
+              deposit={event.deposit.toString()}
+              owner={event.owner}
+              imagePath={event.imagePath}
+              maxCapacity={event.maxCapacity}
+              startTime={event.eventTimestamp.toString()}
+            />
+          ))}
+          {!events.length && (<span>Host your first event</span>)}
+        </div>
+      </div>
+
+    <div>
+      <span>My RSVPs</span>
       <div className="flex flex-wrap">
-      {events && events.map(event => (
-        <EventCard
-          key={event.id}
-          id={event.id}
-          title={event.title}
-          confirmedRSVPs={event.confirmedRSVPs}
-          deposit={event.deposit.toString()}
-          owner={event.owner}
-          imagePath={event.imagePath}
-          maxCapacity={event.maxCapacity}
-          startTime={event.eventTimestamp.toString()}
-        />
-      ))}
-    
+        {RSVPS && RSVPS.map(event => (
+          <EventCard
+            key={event.id}
+            id={event.id}
+            title={event.title}
+            confirmedRSVPs={event.confirmedRSVPs}
+            deposit={event.deposit.toString()}
+            owner={event.owner}
+            imagePath={event.imagePath}
+            maxCapacity={event.maxCapacity}
+            startTime={event.eventTimestamp.toString()}
+          />
+        ))}
+        {!RSVPS.length && (<span>RSVP</span>)}
+      </div>
     </div>
 		</>
 	)
