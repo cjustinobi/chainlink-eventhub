@@ -5,6 +5,7 @@ import { createEvent, toTimestamp } from "@/utils"
 import { useMagicContext } from "@/components/magic/MagicProvider"
 import CloseIcon from '@/public/close.svg'
 import LoadingIcon from '@/public/loading.svg'
+import { ethers } from "ethers"
 
 const FormModal = () => {
 const { showModal, toggleModal, setEventCreated } = useContext(ModalContext)
@@ -22,7 +23,7 @@ const [imagePath, setImagePath] = useState<string>('https://cockpit-project.org/
 
 
 const saveHandler = async () => {
-
+// const provider = new ethers.providers.Web3Provider(window.ethereum)
     if (account) {
       try {
     
@@ -63,7 +64,7 @@ const saveHandler = async () => {
   useEffect(() => {
     const user = localStorage.getItem('user')
     setAccount(user)
-  }, [])
+  }, [account])
 
   return (
   

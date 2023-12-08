@@ -30,7 +30,7 @@ const EventCard: React.FC<EventCardProps> = ({
     const { provider } = useMagicContext()
 
     const rsvp = async (eventId: number, deposit: number) => {
-    
+    const provider = new ethers.providers.Web3Provider(window.ethereum)
       try {
         const res = await createNewRSVP(provider?.getSigner(), eventId, deposit)
         if (res) {
