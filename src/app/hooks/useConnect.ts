@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useMagicContext } from "../../components/magic/MagicProvider";
 
 export function useConnect() {
-  const [account, setAccount] = useState<string>("");
+  const [account, setAccount] = useState<string | null>("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 

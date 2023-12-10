@@ -20,7 +20,14 @@ const config: Config = {
         // customGold: "gold",
       },
       colors: {
-        'gold': '#D4AF37'
+        'gold': '#D4AF37',
+        'black-1': '#0F0F0F',
+        'black-2': '#0D0D0D',
+        'green-1': '#38B081',
+        'blue-1': '#999999',
+        'yellow-1': '#f09c1f',
+        'red-1': '#c13530',
+        'gold-1': '#c1c530',
       }
     },
   },

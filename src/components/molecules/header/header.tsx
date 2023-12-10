@@ -1,13 +1,10 @@
 "use client";
 import Button from "@/components/atoms/button";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import React, { useCallback, useEffect, useState } from "react";
-import ProfilePics from "@/../public/images/profilePics.png";
+import React, { useEffect, useState } from "react";
 import { useMagicContext } from "@/components/magic/MagicProvider";
 import { truncate } from "@/lib/utils";
-import { ethers } from "ethers";
 import { useModalContext } from "@/components/ui/ModalProvider";
 import { useConnect } from "@/app/hooks";
 
@@ -33,11 +30,10 @@ export default function Header() {
     { label: "My Events", href: "/my-events" },
   ];
 
-  const { connect } = useConnect()
+  const { connect, account, setAccount } = useConnect()
   const { magic } = useMagicContext()
   const { toggleModal } = useModalContext()
 
-  const [account, setAccount] = useState<string>("");
   const [logoutBtn, setLogoutBtn] = useState(false);
 
 
@@ -50,7 +46,7 @@ export default function Header() {
   useEffect(() => {
     const user = localStorage.getItem("user");
     setAccount(user);
-  }, []);
+  }, [account, magic]);
 
   return (
     <div className="w-full bg-customBlack flex justify-between items-center p-8 px-16">
